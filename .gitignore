@@ -1,0 +1,9 @@
+.DS_Store
+
+!.htaccess
+*.swn
+*.swo
+*.swp
+clientaccesspolicy.xml
+composer.lock
+vendor/*

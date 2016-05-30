@@ -1,0 +1,12 @@
+{
+    "require": {
+        "joshcam/mysqli-database-class": "^2.6",
+        "dreeye/helper": "~1.0.0"
+    },
+    "repositories": {
+        "packagist": {
+            "type": "vcs",
+            "url": "git@github.com:dreeye/helper.git"
+        }
+    }
+}
