@@ -1,11 +1,16 @@
 <?php 
 
 
-class DjModel extends ModelDj {
+class DjModel extends ConnectModel {
 
     const TBL_ZONE = 'zone';
     const TBL_MALL = 'mall';
     const TBL_MENU = 'menu';
+
+    public function __construct()
+    {
+        $this->_db = $this->connectDj();
+    }
 
     public function getZone($id=FALSE)
     {

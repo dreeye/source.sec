@@ -1,6 +1,9 @@
 {
     "require": {
         "joshcam/mysqli-database-class": "^2.6",
-        "dreeye/helper": "^1.0"
+        "dreeye/helper": "^1.0",
+        "guzzlehttp/guzzle": "^6.2",
+        "fabpot/goutte": "^3.1",
+        "predis/predis": "^1.0"
     }
 }

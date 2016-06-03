@@ -53,6 +53,7 @@ class DjController extends Core
         $mallId = ( $this->_post['mall_id'] ?? $this->Response->error('40016')) ? : $this->Response->error('40019');
         if (!$this->Validate_helper->isInteger($mallId)) $this->Response->error('40023');
         if ($menuData = $this->DjMod->getMenu($mallId)) {
+            $menuData = ['menu_data'=>$menuData];
             $this->Response->success($menuData);
         }
         $this->Response->success([]);
