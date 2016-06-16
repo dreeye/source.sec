@@ -11,6 +11,7 @@ class CtripController extends Core
     {
         parent::init();
         $this->Trip = new Trip();
+        $this->Ctrip = new Ctrip();
         $this->Validate_helper = new Validate_helper();
     }
 
@@ -26,7 +27,7 @@ class CtripController extends Core
             // 需要登陆,获取一个账号密码
             $ctripMod = new CtripModel();
             $userData = $ctripMod->getUser();
-            $flightData = $this->Trip->discount($from, $to, $date, $userData); 
+            $flightData = $this->Ctrip->discount($from, $to, $date, $userData); 
         } else {
             $flightData = $this->Trip->air($from, $to, $date); 
         }

@@ -4,10 +4,9 @@ require '../vendor/autoload.php';
 
 use Goutte\Client;
 use GuzzleHttp\Client as HTTP;
-use GuzzleHttp\Plugin\Cookie\CookiePlugin;
-use GuzzleHttp\Plugin\Cookie\CookieJar\FileCookieJar;
+use GuzzleHttp\Cookie\FileCookieJar;
 
-class Trip {
+class Ctrip {
 
     private   $Client;
     private   $loginCookieCache = 'CtripLoginCookie';
@@ -15,10 +14,8 @@ class Trip {
     private   $ctripUrl = 'http://flights.ctrip.com/booking/';
     private   $loginUrl = 'https://www.corporatetravel.ctrip.com/crptravel/login?lang=zh-cn';
     private   $riskUrl = 'http://ct.ctrip.com/crptravel/Login/CheckRisk';
-    private   $ctUrl = 'http://ct.ctrip.com/corptravel/zh-cn';
-    private   $homeUrl = 'http://ct.ctrip.com/';
     private   $ctFlightUrl = 'http://ct.ctrip.com/flight/AjaxPages/GetFlightsInfo.aspx?FlightResLang=zh_cn';
-    private   $cookieTmp = '/tmp/cookie_ctrip';
+    private   $cookieTmp = '/tmp/cookie_ctrip.txt';
 
     public function __construct()
     {
@@ -26,7 +23,6 @@ class Trip {
         $this->HTTP = new HTTP();
         $this->Response = new Response(); 
         $this->Cache = new Cache();
-        $this->Curl = new Curl();
     }
 
     public function air($from, $to, $date)
@@ -100,21 +96,18 @@ class Trip {
         }*/
         // 通过登录重新获取cookie
         //$svcCookie = $this->home();
-        $this->checkRisk($user);
-        $this->login($user);
-        $this->getCtFlight($user);
-            //$this->site($loginCookie);
+        $cookie = $this->checkRisk($user);
+        $loginCookie = $this->login($user);
+        $this->getCtFlight($user, $loginCookie);
         
     }
 
     private function getCtFlight($user)
     {
-        $this->Curl->setReferrer('http://ct.ctrip.com/flight/ShowFareFirst.aspx');
-        $this->Curl->setopt(CURLOPT_COOKIEFILE, $this->cookieTmp);
-        $this->Curl->setopt(CURLOPT_COOKIEJAR, $this->cookieTmp);
-        $this->Curl->setHeader('Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8');
-        $this->Curl->setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:47.0) Gecko/20100101 Firefox/47.0');
-        $this->Curl->post($this->ctFlightUrl, [
+        $cookieJar = new FileCookieJar($this->cookieTmp, TRUE); 
+        $response = $this->HTTP->request('POST', $this->ctFlightUrl, [
+            'cookies' => $cookieJar,
+            'form_params' => [
                 'ACity1' => 'SHA',
                 'ACity2' => '',
                 'ACity3' => '',
@@ -153,74 +146,46 @@ class Trip {
                 'isIntl' => 'T',
                 'reserver' => 'self',
                 'txtAirline' => '',
-
-
-
-                /*'PassengerIDList' => $user['username'],
-                'PassengerQuantity' => '1',
-                'PassengerType' => 'ADU',
-                'RouteIndex' => '1',
-                'SearchType' => 'S',
-                'SendTicketCity' => '北京',
-                'corp_PassList' => $user['username'].$user['name'],
-                'corp_PolicyID' => $user['username'],
-                'hidTransitProduct' => 'false',*/
+            ],
             
-        ]);
-echo '<pre>';print_r($this->Curl);echo '</pre>';exit(); 
-        if ($this->Curl->error) {
-            echo $this->Curl->error_code;exit();
-        } else {
-        }
-    }
-
-    private function site($loginCookie)
-    {
-        $client = new Client();
-        $crawler = $client->request('GET', $this->ctUrl, [
             'headers' => [
-                    'referer' => 'http://ct.ctrip.com/corptravel/zh-cn',
-                    'cookie' => $loginCookie
+                    'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:47.0) Gecko/20100101 Firefox/47.0',
+                    'Referer' => 'http://ct.ctrip.com/flight/ShowFareFirst.aspx',
+                    'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
             ]
         ]);
-        $nodes = $crawler->filter(".cui_toolkit_login");
-        if($nodes->count()) {
-
-            echo '<pre>';print_r($nodes->text());echo '</pre>';exit(); 
+        if ( $response->getStatusCode() != 200) {
+            echo $response->getStatusCode();exit();             
         }
-echo '<pre>';print_r(12);echo '</pre>';exit(); 
+echo '<pre>';print_r((string)$response->getBody());echo '</pre>';exit(); 
     }
+
 
     public function checkRisk($user)
     {
-        $this->Curl->setReferrer('http://ct.ctrip.com/');
-        $this->Curl->setopt(CURLOPT_COOKIEFILE, $this->cookieTmp);
-        $this->Curl->setopt(CURLOPT_COOKIEJAR, $this->cookieTmp);
-        $this->Curl->post($this->riskUrl, [
+        $cookieJar = new FileCookieJar($this->cookieTmp, TRUE); 
+        $response = $this->HTTP->request('POST', $this->riskUrl, [
+            'cookies' => $cookieJar,
+            'form_params' => [
                 'uid' => $user['username'],
+            ],
+            
+            'headers' => [
+                    'referer' => 'http://ct.ctrip.com/',
+                    'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:45.0) Gecko/20100101 Firefox/45.0',
+            ]
         ]);
-        if ($this->Curl->error) {
-            echo $this->Curl->error_code;exit();
+        if ( $response->getStatusCode() != 200) {
+            echo $response->getStatusCode();exit();             
         }
-        
-
-    }
-    public function home()
-    {
-        $this->Curl->setReferrer('http://ct.ctrip.com/crptravel/logout?url=http://ct.ctrip.com/crptravel/zh-cn');
-        $this->Curl->get($this->homeUrl);
-        if ($this->Curl->error) {
-            echo $this->Curl->error_code;exit();
-        }
-
     }
 
     public function login($user)
     {
-        $this->Curl->setReferrer('http://ct.ctrip.com/');
-        $this->Curl->setopt(CURLOPT_COOKIEFILE, $this->cookieTmp);
-        $this->Curl->setopt(CURLOPT_COOKIEJAR, $this->cookieTmp);
-        $this->Curl->post($this->loginUrl, [
+        $cookieJar = new FileCookieJar($this->cookieTmp, TRUE); 
+        $response = $this->HTTP->request('POST', $this->loginUrl, [
+            'cookies' => $cookieJar,
+            'form_params' => [
                 'backurl' => 'http://ct.ctrip.com/corptravel/zh-cn',
                 'loginname' => $user['username'],
                 'needVCode' => 'F',
@@ -228,12 +193,15 @@ echo '<pre>';print_r(12);echo '</pre>';exit();
                 'vcode' => '',
                 'fastneedVCode' => '',
                 'hidbit' => '',
+            ],
+            
+            'headers' => [
+                    'referer' => 'http://ct.ctrip.com/',
+            ]
         ]);
-        if ($this->Curl->error) {
-            echo $this->Curl->error_code;exit();
+        if ( $response->getStatusCode() != 200) {
+            echo $response->getStatusCode();exit();             
         }
-
     }
-
 
 }
