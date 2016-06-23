@@ -57,8 +57,8 @@ class Ctrip {
               $res[$key]['airport_from'] = $i['dpc'].$i['dbid'];
               $res[$key]['airport_from_zh'] = $json['apb'][$airport_from] ?? '';
               // 出发的城市
-              $res[$key]['dcc'] = $i['dcc'] ?? '';
-              $res[$key]['acc'] = $i['acc'] ?? '';
+              //$res[$key]['dcc'] = $i['dcc'] ?? '';
+              //$res[$key]['acc'] = $i['acc'] ?? '';
         
               // 到达时间
               $res[$key]['dt'] = $i['dt'] ?? '';
@@ -98,7 +98,8 @@ class Ctrip {
         //$svcCookie = $this->home();
         $cookie = $this->checkRisk($user);
         $loginCookie = $this->login($user);
-        $this->getCtFlight($user, $loginCookie);
+        $res = $this->getCtFlight($user, $loginCookie);
+        return $res;
         
     }
 
@@ -161,9 +162,39 @@ class Ctrip {
         if(preg_match('/\w:/', $json)){
             $json = preg_replace('/([a-zA-Z]\w+):/is', '"$1":', $json);
         }  
-//echo '<pre>';print_r($json);echo '</pre>';exit(); 
-        file_put_contents('/tmp/json',$json);
-echo '<pre>';print_r(json_decode($json,true));echo '</pre>';exit(); 
+        $responseArr = json_decode($json,true);
+        $flightList = $responseArr['FlightsList'];
+        $res = [];
+        foreach($flightList as $key=>$val) {
+            // 价格
+            $res[$key]['price'] = $val['Price'] ?? '';
+            // 到达的机场
+            $res[$key]['airport_to'] = $val['ArriveAirport'][0] ?? '';
+            $res[$key]['airport_to_zh'] = $val['ArriveAirport'][1].$val['ArriveAirportSMSName'] ?? '';
+            // 起飞的机场
+            $res[$key]['airport_from'] = $val['DepartAirport'][0] ?? '';
+            $res[$key]['airport_from_zh'] = $val['DepartAirport'][1].$val['DepartAirportSMSName'] ?? '';
+            // 出发的城市
+            //$res[$key]['dcc'] = $i['dcc'] ?? '';
+            //$res[$key]['acc'] = $i['acc'] ?? '';
+
+            // 到达时间
+            $res[$key]['dt'] = $val['ArriveTime'] ?? '';
+
+            // 起飞时间
+            $res[$key]['at'] = $val['DepartTime'] ?? '';
+            // 历史准点率
+            $res[$key]['pr'] = $val['PunctualityRate'] ?? '';
+            // 民航基金
+            $res[$key]['tax'] = $val['Tax'] ?? '';
+            // 航空公司
+            $res[$key]['company_name'] = $val['Airline'][1];
+            // 飞机型号
+            $res[$key]['fn'] = $val['Flight'] ?? '';
+            // 机型
+            $res[$key]['cf'] = $val['FlightCraft'].'('.$val['CraftKind'].')';
+        }
+        return $res;
     }
 
 

@@ -48,7 +48,7 @@ class Response {
 
     public function success($data)
     {
-        echo json_encode($data);
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
         exit();
     }
 
