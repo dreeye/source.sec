@@ -121,12 +121,12 @@ class Ctrip {
                 'CorpCardType' => 'C',
                 'CorpPayType' => 'pub',
                 'DCity1' => 'BJS',
-                'DCity2' => '',
+                'DCity2' => 'SHA',
                 'DCity3' => '',
                 'DCity4' => '',
                 'DCity5' => '',
                 'DCity6' => '',
-                'DDate1' => '2016-06-18',
+                'DDate1' => '2016-06-23',
                 'DDate2' => '',
                 'FlightNumber' => '2',
                 'FlightSearchType' => 'S',
@@ -139,8 +139,8 @@ class Ctrip {
                 'UseTRFlag' => '0',
                 'XDDate' => '',
                 'acity' => '',
-                'cityend' => '上海(SHA)',
-                'citystart' => '北京(BJS)',
+                //'cityend' => '上海(SHA)',
+                //'citystart' => '北京(BJS)',
                 'currentLang' => 'zh_cn',
                 'flight_company' => '',
                 'isIntl' => 'T',
@@ -157,7 +157,13 @@ class Ctrip {
         if ( $response->getStatusCode() != 200) {
             echo $response->getStatusCode();exit();             
         }
-echo '<pre>';print_r((string)$response->getBody());echo '</pre>';exit(); 
+        $json = preg_replace('# #', '', mb_convert_encoding((string)$response->getBody(), 'utf8', 'gbk'));
+        if(preg_match('/\w:/', $json)){
+            $json = preg_replace('/([a-zA-Z]\w+):/is', '"$1":', $json);
+        }  
+//echo '<pre>';print_r($json);echo '</pre>';exit(); 
+        file_put_contents('/tmp/json',$json);
+echo '<pre>';print_r(json_decode($json,true));echo '</pre>';exit(); 
     }
 
 
