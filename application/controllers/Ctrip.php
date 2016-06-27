@@ -19,18 +19,25 @@ class CtripController extends Core
     {
         $from = ( $this->_post['from'] ?? $this->Response->error('40016')) ? : $this->Response->error('40019');
         $to = ( $this->_post['to'] ?? $this->Response->error('40016') ) ? : $this->Response->error('40020');
-        $mode = ( $this->_post['mode'] ?? 'normal' ) ? : $this->Response->error('40020');
+        // $mode = ( $this->_post['mode'] ?? 'normal' ) ? : $this->Response->error('40020');
         $date = ( $this->_post['date'] ?? date('Y-m-d')) ? : date('Y-m-d');
         if ( ! $this->Validate_helper->isDate($date, 'Y-m-d') ) $this->Response->error('40022');
 
-        if ($mode == 'discount') {  
+        //if ($mode == 'discount') {  
             // 需要登陆,获取一个账号密码
             $ctripMod = new CtripModel();
             $userData = $ctripMod->getUser();
-            $flightData = $this->Ctrip->discount($from, $to, $date, $userData); 
-        } else {
-            $flightData = $this->Trip->air($from, $to, $date); 
-        }
+            $flightData = $this->Ctrip->discount($from, $to, $date, $userData);
+            if ($flightData) {
+                $flightData = [
+                                'flight_data'=>$this->Ctrip->discount($from, $to, $date, $userData)
+                              ]; 
+            } else {
+                $flightData = [ 'flight_data'=>$this->Trip->air($from, $to, $date)]; 
+
+            }
+        // } else {
+       // }
         if ($flightData) {
             $this->Response->success($flightData);
         }

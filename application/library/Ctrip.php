@@ -82,6 +82,7 @@ class Ctrip {
               // 机型
               $res[$key]['cf'] = $i['cf']['c'].'('.$s.')';
         }
+        $res['mode'] = 'normal';
         return $res;
 
 
@@ -98,18 +99,19 @@ class Ctrip {
         //$svcCookie = $this->home();
         $cookie = $this->checkRisk($user);
         $loginCookie = $this->login($user);
-        $res = $this->getCtFlight($user, $loginCookie);
+        $res = $this->getCtFlight($user, $from, $to, $date);
         return $res;
         
     }
 
-    private function getCtFlight($user)
+    private function getCtFlight($user, $from, $to, $date)
     {
+//echo '<pre>';print_r($from.'_'.$to.'_'.$date);echo '</pre>';exit(); 
         $cookieJar = new FileCookieJar($this->cookieTmp, TRUE); 
         $response = $this->HTTP->request('POST', $this->ctFlightUrl, [
             'cookies' => $cookieJar,
             'form_params' => [
-                'ACity1' => 'SHA',
+                'ACity1' => $to,
                 'ACity2' => '',
                 'ACity3' => '',
                 'ACity4' => '',
@@ -121,13 +123,13 @@ class Ctrip {
                 'ClassType' => '',
                 'CorpCardType' => 'C',
                 'CorpPayType' => 'pub',
-                'DCity1' => 'BJS',
-                'DCity2' => 'SHA',
+                'DCity1' => $from,
+                'DCity2' => $to,
                 'DCity3' => '',
                 'DCity4' => '',
                 'DCity5' => '',
                 'DCity6' => '',
-                'DDate1' => '2016-06-23',
+                'DDate1' => $date,
                 'DDate2' => '',
                 'FlightNumber' => '2',
                 'FlightSearchType' => 'S',
@@ -156,7 +158,9 @@ class Ctrip {
             ]
         ]);
         if ( $response->getStatusCode() != 200) {
-            echo $response->getStatusCode();exit();             
+            error_log("discount error,statusCode=".$response->getStatusCode());
+            return FALSE;
+            // echo $response->getStatusCode();exit();             
         }
         $json = preg_replace('# #', '', mb_convert_encoding((string)$response->getBody(), 'utf8', 'gbk'));
         if(preg_match('/\w:/', $json)){
@@ -194,6 +198,7 @@ class Ctrip {
             // 机型
             $res[$key]['cf'] = $val['FlightCraft'].'('.$val['CraftKind'].')';
         }
+        $res['mode'] = 'discount';
         return $res;
     }
 
