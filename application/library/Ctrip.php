@@ -96,9 +96,9 @@ class Ctrip {
             //$this->site($loginCookie);
         }*/
         // 通过登录重新获取cookie
-        //$svcCookie = $this->home();
         $cookie = $this->checkRisk($user);
         $loginCookie = $this->login($user);
+        $svcCookie = $this->first($user, $from, $to, $date);
         $res = $this->getCtFlight($user, $from, $to, $date);
         return $res;
         
@@ -167,8 +167,8 @@ class Ctrip {
             ]);
 
         
-        } catch (ClientException $e) {
-            error_log("discount error,statusCode=".$e->getStatusCode());
+        } catch (GuzzleHttp\Exception\ClientException $e) {
+            error_log("discount error,statusCode=".$e->getResponse()->getStatusCode());
             return FALSE;
 
         }
@@ -257,6 +257,73 @@ class Ctrip {
         ]);
         if ( $response->getStatusCode() != 200) {
             echo $response->getStatusCode();exit();             
+        }
+    }
+    public function first($user, $from, $to, $date)
+    {
+        try {
+            $cookieJar = new FileCookieJar($this->cookieTmp, TRUE); 
+            $response = $this->HTTP->request('POST', 'http://ct.ctrip.com/flight/ShowFareFirst.aspx', [
+                'cookies' => $cookieJar,
+                'form_params' => [
+                    'ACity1' => $to,
+                    'ACity2' => '',
+                    // 'ACity3' => '',
+                    // 'ACity4' => '',
+                    // 'ACity5' => '',
+                    // 'ACity6' => '',
+                    'Airline' => '',
+                    // 'BookingPolicy' => 'C',
+                    'BookingType' => 'SELF',
+                    'ClassType' => '',
+                    // 'CorpCardType' => 'C',
+                    'CorpPayType' => 'PUB',
+                    'DCity1' => $from,
+                    'DCity2' => $to,
+                    // 'DCity3' => '',
+                    // 'DCity4' => '',
+                    // 'DCity5' => '',
+                    // 'DCity6' => '',
+                    'DDate1' => $date,
+                    'DDate2' => '',
+                    'PassengerIDList' => '2111222368',
+                    'PassengerQuantity' => '1',
+                    'PassengerType' => 'ADU',
+                    'RouteIndex' => '1',
+                    'SearchType' => 'S', 
+
+                    // 'FlightNumber' => '2',
+                    // 'FlightSearchType' => 'S',
+                    // 'IsCanBookingForNOTEmp' => 'T',
+                    // 'IsRunFlt15' => 'False',
+                    // 'NextUrl' => '',
+                    'SendTicketCity' => '',
+                    'corp_PassList' => '2111222368',
+                    'corp_PolicyID' => '2111222368',
+                    'hidTransitProduct' => 'false',
+                    // 'UseTRFlag' => '0',
+                    // 'XDDate' => '',
+                    // 'acity' => '',
+                    //'cityend' => '上海(SHA)',
+                    //'citystart' => '北京(BJS)',
+                    // 'currentLang' => 'zh_cn',
+                    // 'flight_company' => '',
+                    // 'isIntl' => 'T',
+                    // 'reserver' => 'self',
+                    // 'txtAirline' => '',
+                ],
+                
+                'headers' => [
+                        'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:47.0) Gecko/20100101 Firefox/47.0',
+                        'Referer' => 'http://ct.ctrip.com/flight/ShowFareFirst.aspx',
+                ]
+            ]);
+
+        
+        } catch (GuzzleHttp\Exception\ClientException $e) {
+            error_log("discount first function error,statusCode=".$e->getResponse()->getStatusCode());
+            return FALSE;
+
         }
     }
 
