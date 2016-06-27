@@ -30,7 +30,7 @@ class CtripController extends Core
             $flightData = $this->Ctrip->discount($from, $to, $date, $userData);
             if ($flightData) {
                 $flightData = [
-                                'flight_data'=>$this->Ctrip->discount($from, $to, $date, $userData)
+                                'flight_data'=>$flightData
                               ]; 
             } else {
                 $flightData = [ 'flight_data'=>$this->Trip->air($from, $to, $date)]; 
