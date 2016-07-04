@@ -83,6 +83,7 @@ class Ctrip {
               $res[$key]['cf'] = $i['cf']['c'].'('.$s.')';
         }
         // $res['mode'] = 'normal';
+        error_log("ctrip return mode by Normal!!");
         return $res;
 
 
