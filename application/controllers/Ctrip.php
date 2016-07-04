@@ -48,6 +48,7 @@ class CtripController extends Core
     {
         $cityMod = new CtripModel();
         $cityData = $cityMod->getCity();
+        $cityData = ['city_data'=>$cityData];
         $this->Response->success($cityData);
     }
 
