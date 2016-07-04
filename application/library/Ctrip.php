@@ -82,7 +82,7 @@ class Ctrip {
               // 机型
               $res[$key]['cf'] = $i['cf']['c'].'('.$s.')';
         }
-        $res['mode'] = 'normal';
+        // $res['mode'] = 'normal';
         return $res;
 
 
@@ -212,7 +212,7 @@ class Ctrip {
             // 机型
             $res[$key]['cf'] = $val['FlightCraft'].'('.$val['CraftKind'].')';
         }
-        $res['mode'] = 'discount';
+        // $res['mode'] = 'discount';
         return $res;
     }
 
